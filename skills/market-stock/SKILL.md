@@ -102,6 +102,10 @@ curl "$BASE/api/v2/cnstock/company?symbol=600519.SH"
 - `market` **必填**: `cn`(A股), `hk`(港股), `us`(美股)
 - 日期用 `YYYY-MM-DD`
 
+### 5. API Boundary — 只用文档中列出的端点
+
+**NEVER guess or fabricate API endpoints.** Only use endpoints explicitly listed in the Quick Route table above. If the data you need is not available through any listed endpoint, DO NOT invent URLs like `/api/v2/cnstock/industry`, `/api/v2/cnstock/financial`, `/api/v2/cnstock/profile`, or `/api/v2/cnstock/sector` — these do not exist and will return 404. Instead, tell the user this data is not available via the current API, and suggest using `tavily` to search for it.
+
 ---
 
 ## Quick Examples
@@ -139,7 +143,7 @@ curl -sS "${AUTH[@]}" -X POST "$BASE/api/v2/indicators" -d '{
 
 ## Report Generation Workflow
 
-采集数据后，按以下 3 步生成研报：
+采集数据后，按以下 3 步生成研报。**控制篇幅：单股分析 ≤ 500 字，板块研报 ≤ 1000 字。结论先行，数据用表格，不要废话。**
 
 ### Step 1: Cluster Signals
 
@@ -159,19 +163,19 @@ curl -sS "${AUTH[@]}" -X POST "$BASE/api/v2/indicators" -d '{
 
 ### Step 2: Write Sections
 
-对每个主题写深度分析段落：
-- 叙事逻辑：宏观/行业背景 → 传导机制 → 个股影响
-- 引用 ISQ 分数（置信度、强度）
-- 包含 T+3/T+5 预测
+对每个主题写分析段落，结构：
+1. **结论先行**（1-2 句判断）
+2. **关键数据**（表格呈现）
+3. **风险点**（2-3 条，融入正文）
+- 包含 T+3/T+5 方向预测
 - 插入 `json-chart` 图表块
 
 ### Step 3: Final Assembly
 
 组装完整报告：
-- 确保 H2/H3 层级正确
-- 生成 `## References` 引用章节
-- 生成 `## Risk Factors` 风险章节
-- 生成 `## Executive Summary` 含 Quick Scan 表格
+- `## Executive Summary` 含 Quick Scan 表格
+- 正文各主题段落（H2/H3 层级）
+- 风险已融入各段落，不单独成章
 
 ---
 
