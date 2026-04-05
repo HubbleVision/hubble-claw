@@ -104,7 +104,66 @@ curl "$BASE/api/v2/cnstock/company?symbol=600519.SH"
 
 ### 5. API Boundary — 只用文档中列出的端点
 
-**NEVER guess or fabricate API endpoints.** Only use endpoints explicitly listed in the Quick Route table above. If the data you need is not available through any listed endpoint, DO NOT invent URLs like `/api/v2/cnstock/industry`, `/api/v2/cnstock/financial`, `/api/v2/cnstock/profile`, or `/api/v2/cnstock/sector` — these do not exist and will return 404. Instead, tell the user this data is not available via the current API, and suggest using `tavily` to search for it.
+**NEVER guess or fabricate API endpoints.** Only use endpoints explicitly listed in the Quick Route table above. The following endpoints DO NOT EXIST — do not call them:
+
+`/api/v2/cnstock/industry` · `/api/v2/cnstock/industry/daily` · `/api/v2/cnstock/sector` · `/api/v2/cnstock/financial` · `/api/v2/cnstock/profile` · `/api/v2/cnstock/info` · `/api/v2/cnstock/report` · `/api/v2/cnstock/summary`
+
+If the data you need is not in Quick Route, tell the user and suggest `tavily` to search for it.
+
+### 6. 技术指标必须用批量接口
+
+需要 2 个以上指标时，**必须用 `POST /api/v2/indicators` 批量接口**，一次请求拿全部指标。禁止逐个调用单指标接口。
+
+```bash
+# ✅ 正确：一次批量拿 RSI + MACD + BOLL + KDJ
+curl -sS "${AUTH[@]}" -X POST "$BASE/api/v2/indicators" -d '{
+  "market": "cn", "symbol": "000001.SZ", "interval": "1d", "limit": 100,
+  "indicators": [
+    {"type": "rsi", "params": [14]},
+    {"type": "macd", "params": [12, 26, 9]},
+    {"type": "boll", "params": [20, 2.0]},
+    {"type": "kdj", "params": [9, 3, 3]}
+  ]
+}'
+
+# ❌ 错误：分 4 次调用单指标接口
+curl "$BASE/api/v2/indicators/rsi?..."
+curl "$BASE/api/v2/indicators/macd?..."
+curl "$BASE/api/v2/indicators/boll?..."
+curl "$BASE/api/v2/indicators/kdj?..."
+```
+
+### 7. 并行调用 — 不要串行等待
+
+K线数据和指标数据**没有依赖关系，应该并行调用**。不要等 K 线返回后再调指标。
+
+```
+✅ 并行：klines + POST /indicators + daily-basic 同时发出
+❌ 串行：先 klines → 等返回 → 再 indicators → 等返回 → 再 daily-basic
+```
+
+### 8. 港股日线禁用 limit，必须用 startDate/endDate
+
+港股 `/api/v2/hkstock/daily` 的 `limit` 参数有 bug：返回数据会缺少最新交易日。**港股日线必须用 `startDate`/`endDate` 取数据，不要用 `limit`。**
+
+```bash
+# ✅ 正确：用日期范围
+curl -sS "${AUTH[@]}" "$BASE/api/v2/hkstock/daily?symbol=00700.HK&startDate=20260301&endDate=20260405"
+
+# ❌ 有 bug：limit 会丢失最新交易日数据
+curl -sS "${AUTH[@]}" "$BASE/api/v2/hkstock/daily?symbol=00700.HK&limit=30"
+```
+
+### 9. 不要直接爬取外部网页
+
+**DO NOT** directly fetch external websites (sina.com.cn, wallstreetcn.com, cninfo.com.cn, cls.cn, 36kr.com, etc.) — most will fail (JS rendering, anti-scraping, 404). Use the correct skill:
+
+| 需求 | 正确方式 |
+|------|----------|
+| 新闻/资讯 | `alphaear-news` |
+| 搜索最新信息 | `tavily` |
+| 爬取特定网页 | `firecrawl` |
+| 微信公众号文章 | `wechat-article-extractor` |
 
 ---
 
