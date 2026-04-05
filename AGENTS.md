@@ -99,7 +99,7 @@ If deployed in a group context:
 
 ## Tools & Skill Routing
 
-Skills provide your tools. When you need one, check its `SKILL.md`. Keep local notes (API endpoints, data source preferences, preferred screener settings) in `TOOLS.md`. Full routing details in `skills/skill_router/SKILL.md`.
+Skills provide your tools. When you need one, check its `SKILL.md`. Keep local notes (API endpoints, data source preferences, preferred screener settings) in `TOOLS.md`. Full routing details in `skills/skill-router/SKILL.md`.
 
 ### Data Source Rule
 
