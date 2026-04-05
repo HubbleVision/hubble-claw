@@ -7,7 +7,7 @@ description: 股票市场数据与技术分析 — A股/港股/美股 K线、公
 
 Version: v2.0.0
 
-> Load this skill when you need stock market data for A股 (Chinese stocks), 港股 (HK stocks), or 美股 (US stocks).
+> Load this skill when you need stock market data or technical indicators for A股 (Chinese stocks), 港股 (HK stocks), or 美股 (US stocks).
 
 ## When to use
 
