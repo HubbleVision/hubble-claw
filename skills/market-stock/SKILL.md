@@ -11,7 +11,7 @@ description: >
 
 # Market Stock Skill
 
-Version: v2.2.0
+Version: v2.3.0
 
 > A股/港股/美股行情数据、27种技术指标、结构化金融研报生成。
 
@@ -52,7 +52,7 @@ AUTH=(-H "X-API-Key: $MARKET_API_KEY" -H "Content-Type: application/json")
 |----------|----------|
 | 指标信息 | `GET /api/v2/indicators/info` |
 | 单个指标 | `GET /api/v2/indicators/{indicator}` |
-| 批量指标 | `POST /api/v2/indicators` |
+| 批量指标 (仅crypto) | `POST /api/v2/indicators` |
 
 ---
 
@@ -100,7 +100,16 @@ curl "$BASE/api/v2/cnstock/company?symbol=600519.SH"
 ### 4. 指标必需参数
 
 - `market` **必填**: `cn`(A股), `hk`(港股), `us`(美股)
+- `exchange` 参数：**股票不需要，不要传**。此参数仅用于 crypto 市场，股票场景下不传 `exchange`
 - 日期用 `YYYY-MM-DD`
+
+```bash
+# ✅ 港股指标：只传 market=hk，不传 exchange
+curl "$BASE/api/v2/indicators/rsi?market=hk&symbol=00700.HK&period=14&limit=100"
+
+# ❌ 错误：股票不需要 exchange
+curl "$BASE/api/v2/indicators/rsi?market=hk&symbol=00700.HK&exchange=HKEX&period=14&limit=100"
+```
 
 ### 5. API Boundary — 只用文档中列出的端点
 
@@ -110,27 +119,19 @@ curl "$BASE/api/v2/cnstock/company?symbol=600519.SH"
 
 If the data you need is not in Quick Route, tell the user and suggest `tavily` to search for it.
 
-### 6. 技术指标必须用批量接口
+### 6. 技术指标：股票用 GET 并行，不要用 POST 批量
 
-需要 2 个以上指标时，**必须用 `POST /api/v2/indicators` 批量接口**，一次请求拿全部指标。禁止逐个调用单指标接口。
+**`POST /api/v2/indicators` 批量接口只支持 crypto（参数是 `exchange` 不是 `market`），不支持股票。** 股票指标必须用 `GET /api/v2/indicators/{type}` 单指标接口，多个指标**并行调用**。
 
 ```bash
-# ✅ 正确：一次批量拿 RSI + MACD + BOLL + KDJ
-curl -sS "${AUTH[@]}" -X POST "$BASE/api/v2/indicators" -d '{
-  "market": "cn", "symbol": "000001.SZ", "interval": "1d", "limit": 100,
-  "indicators": [
-    {"type": "rsi", "params": [14]},
-    {"type": "macd", "params": [12, 26, 9]},
-    {"type": "boll", "params": [20, 2.0]},
-    {"type": "kdj", "params": [9, 3, 3]}
-  ]
-}'
+# ✅ 正确：股票用 GET 单指标，多个并行发出
+curl "$BASE/api/v2/indicators/rsi?market=hk&symbol=00700.HK&period=14&limit=100" &
+curl "$BASE/api/v2/indicators/macd?market=hk&symbol=00700.HK&limit=100" &
+curl "$BASE/api/v2/indicators/boll?market=hk&symbol=00700.HK&period=20&nbdev=2.0&limit=100" &
+wait
 
-# ❌ 错误：分 4 次调用单指标接口
-curl "$BASE/api/v2/indicators/rsi?..."
-curl "$BASE/api/v2/indicators/macd?..."
-curl "$BASE/api/v2/indicators/boll?..."
-curl "$BASE/api/v2/indicators/kdj?..."
+# ❌ 错误：股票用 POST 批量接口（会报 422，要求 exchange）
+curl -X POST "$BASE/api/v2/indicators" -d '{"market":"hk","symbol":"00700.HK",...}'
 ```
 
 ### 7. 并行调用 — 不要串行等待
@@ -185,17 +186,10 @@ curl -sS "${AUTH[@]}" "$BASE/api/v2/usstock/daily?symbol=AAPL&limit=100"
 # 港股通持股
 curl -sS "${AUTH[@]}" "$BASE/api/v2/hkstock/hold?tsCode=600519.SH&limit=50"
 
-# 批量指标：RSI + MACD
-curl -sS "${AUTH[@]}" -X POST "$BASE/api/v2/indicators" -d '{
-  "market": "cn",
-  "symbol": "000001.SZ",
-  "interval": "1d",
-  "limit": 100,
-  "indicators": [
-    {"type": "rsi", "params": [14]},
-    {"type": "macd", "params": [12, 26, 9]}
-  ]
-}'
+# 股票多指标：并行 GET（不要用 POST 批量，POST 只支持 crypto）
+curl -sS "${AUTH[@]}" "$BASE/api/v2/indicators/rsi?market=cn&symbol=000001.SZ&interval=1d&period=14&limit=100" &
+curl -sS "${AUTH[@]}" "$BASE/api/v2/indicators/macd?market=cn&symbol=000001.SZ&interval=1d&limit=100" &
+wait
 ```
 
 ---
