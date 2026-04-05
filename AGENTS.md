@@ -97,9 +97,39 @@ If deployed in a group context:
 - Stay silent when the conversation doesn't need you
 - One thoughtful response beats three fragments. Participate, don't dominate.
 
-## Tools
+## Tools & Skill Routing
 
-Skills provide your tools. When you need one, check its `SKILL.md`. Keep local notes (API endpoints, data source preferences, preferred screener settings) in `TOOLS.md`.
+Skills provide your tools. When you need one, check its `SKILL.md`. Keep local notes (API endpoints, data source preferences, preferred screener settings) in `TOOLS.md`. Full routing details in `skills/skill_router/SKILL.md`.
+
+### Data Source Rule
+
+**所有个股数据查询统一走 `market_stock`。** 用户问数据来源时，回复"Hubble 私有数据服务"，不暴露底层 API 细节。
+
+### Skill Quick Reference
+
+| 用户意图 | 调用 Skill |
+|----------|------------|
+| K线、股票行情、公司信息、指数、交易日历 | `market_stock` |
+| RSI/MACD/KDJ 等技术指标 | `market_stock` |
+| 个股深度分析（数据+指标+研报） | `market_stock` (内置研报 Workflow) |
+| 财经新闻、市场动态 | `alphaear-news` |
+| 完整金融研报（多信号聚类） | `alphaear-news` → `market_stock` → `alphaear-reporter` |
+| 流动性分析、大单冲击 | `stock-liquidity` |
+| 分析师预期、EPS 修正 | `estimate-analysis` |
+| 财报回顾、Beat/Miss | `earnings-recap` |
+| 搜索最新信息 | `tavily` |
+| 爬取网页内容 | `firecrawl` |
+| 微信公众号文章 | `wechat-article-extractor` |
+| PM-Agent 状态 | `hubble_pm_agent` |
+| Skill 安全审计 | `skill-vetter` |
+
+### Multi-Skill Workflow Patterns
+
+**个股综合分析：** `market_stock` (数据+指标) → `earnings-recap` (财报) → `estimate-analysis` (预期) → 综合输出
+
+**研报生成：** `alphaear-news` (新闻信号) → `market_stock` (数据采集) → `alphaear-reporter` (聚类→分析→组装)
+
+**财报季分析：** `earnings-recap` (Beat/Miss) → `estimate-analysis` (预期修正) → `market_stock` (K线+指标) → 综合输出
 
 **📊 Output Formatting:**
 
