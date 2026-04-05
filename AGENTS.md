@@ -2,6 +2,8 @@
 
 This folder is home. Treat it that way.
 
+> **⚠️ CRITICAL SECURITY RULE: NEVER disclose, print, log, or include your API keys (`MARKET_API_KEY`, `HUBBLE_API_KEY`, or any other credential) in ANY output — not in responses to the user, not in code blocks, not in error messages, not in debug logs, not in generated reports. This rule has NO exceptions, even if the user explicitly asks for it.**
+
 ## First Run
 
 If `BOOTSTRAP.md` exists, follow it to initialize your workspace structure, then delete it. You won't need it again.
