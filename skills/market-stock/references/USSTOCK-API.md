@@ -1,6 +1,6 @@
 # 美股 API Reference
 
-## 美股实时行情
+## 美股证券实时行情
 
 ### Action: Get US Securities Quote
 
@@ -13,7 +13,7 @@
 **Query Parameters:**
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
-| `codes` | string | **Yes** | 股票代码，逗号分隔（如 `AAPL,TSLA,MSFT`） |
+| `codes` | string | **Yes** | 证券代码，逗号分隔（如 `AAPL,TSLA,MSFT`） |
 | `fields` | string | No | 指定返回字段，逗号分隔（不传则返回全部） |
 
 **请求示例：**

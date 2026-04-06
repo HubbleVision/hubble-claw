@@ -2,7 +2,7 @@
 
 > 代码格式规则、日期格式、调用模板见 `SKILL.md` Critical Rules 部分。本文档仅补充各端点的详细参数。
 
-## 港股实时行情
+## 港股证券实时行情
 
 ### Get HK Securities Quote
 `GET /api/v2/hkstock/securities`
@@ -11,7 +11,7 @@
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
-| `codes` | string | **Yes** | 股票代码，逗号分隔（如 `00700,09988,09888`） |
+| `codes` | string | **Yes** | 证券代码，逗号分隔（如 `00700,09988,09888`） |
 | `fields` | string | No | 返回字段，逗号分隔 |
 
 ```bash

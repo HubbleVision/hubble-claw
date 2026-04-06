@@ -2,7 +2,7 @@
 
 > 代码格式规则、日期格式、并行调用模板见 `SKILL.md` Critical Rules 部分。本文档仅补充各端点的详细参数。
 
-## A股实时行情
+## A股证券实时行情
 
 ### Get A股 Securities Quote
 `GET /api/v2/cnstock/securities`
@@ -11,7 +11,7 @@
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
-| `codes` | string | **Yes** | 股票代码，逗号分隔（如 `600519,000001,300750`） |
+| `codes` | string | **Yes** | 证券代码，逗号分隔（如 `600519,000001,300750`） |
 | `fields` | string | No | 返回字段，逗号分隔（不传返回全部） |
 
 ```bash

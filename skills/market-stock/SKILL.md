@@ -54,8 +54,8 @@ AUTH=(-H "X-API-Key: $MARKET_API_KEY" -H "Content-Type: application/json")
 
 | 用户意图 | Endpoint | 参数名 | 代码格式 |
 |----------|----------|--------|----------|
-| A股实时行情 | `GET /api/v2/cnstock/securities` | `codes` | 纯数字 `600519` |
-| A股K线 | `GET /api/v2/cnstock/stocks` | `symbol` | `000001.SZ` |
+| A股证券实时行情 | `GET /api/v2/cnstock/securities` | `codes` | 纯数字 `600519` |
+| A股股票K线 | `GET /api/v2/cnstock/stocks` | `symbol` | `000001.SZ` |
 | 股票列表 | `GET /api/v2/cnstock/symbols` | `listStatus` | — |
 | 公司信息 | `GET /api/v2/cnstock/company` | `tsCode` | `000001.SZ` |
 | 每日指标 (PE/PB) | `GET /api/v2/cnstock/daily-basic` | `tsCode` | `000001.SZ` |
@@ -64,12 +64,12 @@ AUTH=(-H "X-API-Key: $MARKET_API_KEY" -H "Content-Type: application/json")
 | 停复牌 | `GET /api/v2/cnstock/suspend` | `tsCode` | `000001.SZ` |
 | 新股IPO | `GET /api/v2/cnstock/new-share` | `startDate/endDate` | — |
 | 交易日历 | `GET /api/v2/cnstock/trade-cal` | `startDate/endDate` | — |
-| 港股实时行情 | `GET /api/v2/hkstock/securities` | `codes` | 纯数字 `00700` |
-| 港股K线 | `GET /api/v2/hkstock/stocks` | `symbol` | `00700.HK` |
+| 港股证券实时行情 | `GET /api/v2/hkstock/securities` | `codes` | 纯数字 `00700` |
+| 港股股票K线 | `GET /api/v2/hkstock/stocks` | `symbol` | `00700.HK` |
 | 港股通Top10 | `GET /api/v2/hkstock/ggt-top10` | `tsCode` | `600519.SH` |
 | 港股通持仓 | `GET /api/v2/hkstock/hold` | `tsCode` | `600519.SH` |
-| 美股实时行情 | `GET /api/v2/usstock/securities` | `codes` | `AAPL` |
-| 美股K线 | `GET /api/v2/usstock/stocks` | `symbol` | `AAPL` |
+| 美股证券实时行情 | `GET /api/v2/usstock/securities` | `codes` | `AAPL` |
+| 美股股票K线 | `GET /api/v2/usstock/stocks` | `symbol` | `AAPL` |
 | 指数行情 | `GET /api/v2/cnstock/index/daily` | `tsCode` | `000001.SH` |
 | 申万行业分类 | `GET /api/v2/cnstock/index/classify` | — | — |
 
@@ -88,14 +88,14 @@ AUTH=(-H "X-API-Key: $MARKET_API_KEY" -H "Content-Type: application/json")
 
 | 接口类型 | 参数名 | A股 | 港股 | 美股 |
 |----------|--------|-----|------|------|
-| **securities**（实时报价） | `codes` | 纯数字 `600519` | 纯数字 `00700` | `AAPL` |
-| **K线**（stocks） | `symbol` | `600519.SH` | `00700.HK` | `AAPL` |
+| **securities**（证券实时报价） | `codes` | 纯数字 `600519` | 纯数字 `00700` | `AAPL` |
+| **K线**（股票 stocks） | `symbol` | `600519.SH` | `00700.HK` | `AAPL` |
 | **其他所有接口** | `tsCode` | `600519.SH` | `00700.HK` | `AAPL` |
 
-**速记：securities 用纯代码 + `codes`，K线用 `symbol`，其余用 `tsCode`。**
+**速记：`securities`（证券）用纯代码 + `codes`，K线（股票）用 `symbol`，其余用 `tsCode`。**
 
 ```bash
-# ✅ securities → 纯代码，codes
+# ✅ securities（证券）→ 纯代码，codes
 curl "$BASE/api/v2/cnstock/securities?codes=600519,000001"
 # ✅ K线 → 带后缀，symbol
 curl "$BASE/api/v2/cnstock/stocks?symbol=600519.SH&limit=10"
