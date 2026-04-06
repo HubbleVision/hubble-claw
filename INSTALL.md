@@ -1,11 +1,24 @@
 # Hubble Claw — Skills Installation Guide
 
-1. 
-- 更新你的 AGENTS.md 为这个 repo 里的内容： https://github.com/HubbleVision/hubble-claw/blob/main/AGENTS.md
-- 更新你的 SOUL.md 为这个 repo 里的内容： https://github.com/HubbleVision/hubble-claw/blob/main/SOUL.md
+1. 将以下配置文件同步到你的 workspace：
+
+| 文件 | 说明 | 来源 |
+|------|------|------|
+| `AGENTS.md` | Agent 核心行为指令 | https://github.com/HubbleVision/hubble-claw/blob/main/AGENTS.md |
+| `SOUL.md` | Agent 灵魂 / 人格定义 | https://github.com/HubbleVision/hubble-claw/blob/main/SOUL.md |
+| `IDENTITY.md` | Agent 身份信息 | https://github.com/HubbleVision/hubble-claw/blob/main/IDENTITY.md |
+| `GROUP-CHAT.md` | 群聊场景行为协议 | https://github.com/HubbleVision/hubble-claw/blob/main/GROUP-CHAT.md |
+| `HEARTBEAT.md` | 后台心跳监控策略 | https://github.com/HubbleVision/hubble-claw/blob/main/HEARTBEAT.md |
+| `BOOTSTRAP.md` | 启动引导流程 | https://github.com/HubbleVision/hubble-claw/blob/main/BOOTSTRAP.md |
+
+2. 将以下工具同步到对应目录：
+
+| 文件 | 目标路径 | 说明 | 来源 |
+|------|----------|------|------|
+| `hubble.sh` | `tools/hubble.sh` | 批量并行 API 查询工具 | https://github.com/HubbleVision/hubble-claw/blob/main/tools/hubble.sh |
 
 
-2. 安装以下 skill
+3. 安装以下 skill
 
 ## Environment Variables
 
@@ -43,7 +56,6 @@ export TAVILY_API_KEY="tvly-your-key-here"
 ### 3. Hubble PM Agent — PM-Agent 管理
 - Source: https://github.com/HubbleVision/hubble-skills/tree/main/openclaw/skills/hubble_pm_agent
 - Env: `HUBBLE_API_BASE_URL`, `HUBBLE_API_KEY`
-- 这个key还没拿到，先跳过安装
 
 ---
 
