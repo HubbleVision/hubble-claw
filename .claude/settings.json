@@ -1,0 +1,16 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Skill",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash .claude/hooks/auto-update.sh",
+            "timeout": 30
+          }
+        ]
+      }
+    ]
+  }
+}
