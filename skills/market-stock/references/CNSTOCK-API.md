@@ -1,356 +1,99 @@
 # A股 & 指数 API Reference
 
-## Part 1: A股 (Chinese Stocks)
+> 代码格式规则、日期格式、并行调用模板见 `SKILL.md` Critical Rules 部分。本文档仅补充各端点的详细参数。
 
-### Action: Get A股 Stock List
+## A股实时行情
 
-- `GET /api/v2/cnstock/symbols`
+### Get A股 Securities Quote
+`GET /api/v2/cnstock/securities`
 
-**Query Parameters:**
+批量查询实时报价，单次最多 500 个代码。**代码格式：纯数字，不带交易所后缀。**
+
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
-| `listStatus` | string | No | Listing status: `L` (listed, default), `D` (delisted), `P` (suspended) |
+| `codes` | string | **Yes** | 股票代码，逗号分隔（如 `600519,000001,300750`） |
+| `fields` | string | No | 返回字段，逗号分隔（不传返回全部） |
 
-**Request:**
 ```bash
-curl -sS "${AUTH[@]}" "$BASE/api/v2/cnstock/symbols"
-curl -sS "${AUTH[@]}" "$BASE/api/v2/cnstock/symbols?listStatus=L"
+curl -sS "${AUTH[@]}" "$BASE/api/v2/cnstock/securities?codes=600519,000001,300750"
+curl -sS "${AUTH[@]}" "$BASE/api/v2/cnstock/securities?codes=600519&fields=price,chgPct,volume"
 ```
 
-**Response:**
 ```json
-{
-  "market": "cn",
-  "symbols": [
-    {"symbol": "000001.SZ", "name": "平安银行", "industry": "银行", "area": "深圳", "listDate": "19910403"}
-  ],
-  "total": 5000
-}
+{"success": true, "data": {"600519": {"name": "贵州茅台", "price": 1688.50, "chgPct": 1.25, "volume": 3500000, "high": 1695.00, "low": 1675.00, "open": 1680.00}}, "timestamp": 1710865200000}
 ```
 
 ---
 
-### Action: Get A股 K-line Data
+## A股 K线数据
 
-- `GET /api/v2/cnstock/klines`
+### Get A股 K-line
+`GET /api/v2/cnstock/stocks`
 
-**Query Parameters:**
 | Parameter | Type | Required | Description | Example |
 |-----------|------|----------|-------------|---------|
-| `symbol` | string | **Yes** | Stock code | `000001.SZ` |
-| `interval` | string | No | Period: `daily`, `weekly`, `monthly` (default: `daily`) | `daily` |
-| `startDate` | string | No | Start date YYYYMMDD | `20240101` |
-| `endDate` | string | No | End date YYYYMMDD | `20240131` |
-| `limit` | int | No | Max 1-5000 (default: 100) | `500` |
+| `symbol` | string | **Yes** | 股票代码（带后缀） | `000001.SZ` |
+| `interval` | string | No | `daily` (默认), `weekly`, `monthly` | `daily` |
+| `startDate` | string | No | YYYYMMDD | `20240101` |
+| `endDate` | string | No | YYYYMMDD | `20240131` |
+| `limit` | int | No | 1-5000 (默认 100) | `500` |
 
-**Request:**
 ```bash
-# Get recent 500 daily candles
-curl -sS "${AUTH[@]}" \
-  "$BASE/api/v2/cnstock/klines?symbol=000001.SZ&interval=daily&limit=500"
-
-# Get weekly data for Jan 2024
-curl -sS "${AUTH[@]}" \
-  "$BASE/api/v2/cnstock/klines?symbol=000001.SZ&interval=weekly&startDate=20240101&endDate=20240131"
+curl -sS "${AUTH[@]}" "$BASE/api/v2/cnstock/stocks?symbol=000001.SZ&interval=daily&limit=500"
+curl -sS "${AUTH[@]}" "$BASE/api/v2/cnstock/stocks?symbol=000001.SZ&interval=weekly&startDate=20240101&endDate=20240131"
 ```
 
-**Response:**
 ```json
-{
-  "symbol": "000001.SZ",
-  "interval": "daily",
-  "data": [
-    {
-      "time": 1704067200000,
-      "open": 10.50,
-      "high": 10.80,
-      "low": 10.40,
-      "close": 10.70,
-      "volume": 1234567,
-      "adjFactor": 1.0
-    }
-  ],
-  "total": 500
-}
+{"symbol": "000001.SZ", "interval": "daily", "data": [{"time": 1704067200000, "open": 10.50, "high": 10.80, "low": 10.40, "close": 10.70, "volume": 1234567, "adjFactor": 1.0}], "total": 500}
 ```
 
 ---
 
-### Action: Get Company Information
+## A股基础数据 Endpoints
 
-- `GET /api/v2/cnstock/company`
+> **通用参数**：`tsCode`(带后缀), `tradeDate`, `startDate`, `endDate`, `limit`(1-5000, 默认100)。
+> 代码格式规则见 SKILL.md Critical Rules 1。
 
-**Query Parameters:**
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `tsCode` | string | No | Stock code (e.g., `000001.SZ`) |
-| `exchange` | string | No | Exchange: `SSE`, `SZSE` |
-| `limit` | int | No | Max 1-5000 (default: 100) |
+| Endpoint | 代码参数 | 额外参数 | 说明 |
+|----------|----------|----------|------|
+| `/api/v2/cnstock/symbols` | — | `listStatus`: L/D/P | 股票列表 |
+| `/api/v2/cnstock/company` | `tsCode` | `exchange`: SSE/SZSE | 公司信息 |
+| `/api/v2/cnstock/daily-basic` | `tsCode` | — | 每日指标 (PE/PB/换手率) |
+| `/api/v2/cnstock/adj-factor` | `tsCode` | — | 复权因子 |
+| `/api/v2/cnstock/name-change` | `tsCode` | — | 更名历史 |
+| `/api/v2/cnstock/new-share` | — | — | IPO 新股 |
+| `/api/v2/cnstock/stk-limit` | `tsCode` | — | 涨跌停价格 |
+| `/api/v2/cnstock/suspend` | `tsCode` | `suspendDate`, `resumeDate` | 停复牌信息 |
+| `/api/v2/cnstock/trade-cal` | — | `exchange`: SSE/SZSE | 交易日历 (limit 最大 10000) |
 
-**Request:**
 ```bash
+# tsCode 类
 curl -sS "${AUTH[@]}" "$BASE/api/v2/cnstock/company?tsCode=000001.SZ"
-curl -sS "${AUTH[@]}" "$BASE/api/v2/cnstock/company?exchange=SSE&limit=100"
-```
+curl -sS "${AUTH[@]}" "$BASE/api/v2/cnstock/daily-basic?tsCode=000001.SZ&tradeDate=20240115"
 
----
-
-### Action: Get Daily Basic Indicators
-
-- `GET /api/v2/cnstock/daily-basic`
-
-Daily indicators including PE, PB, turnover rate, etc.
-
-**Query Parameters:**
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `tsCode` | string | No | Stock code |
-| `tradeDate` | string | No | Trade date YYYYMMDD |
-| `startDate` | string | No | Start date YYYYMMDD |
-| `endDate` | string | No | End date YYYYMMDD |
-| `limit` | int | No | Max 1-5000 (default: 100) |
-
-**Request:**
-```bash
-curl -sS "${AUTH[@]}" "$BASE/api/v2/cnstock/daily-basic?tsCode=000001.SZ&limit=100"
-curl -sS "${AUTH[@]}" "$BASE/api/v2/cnstock/daily-basic?tradeDate=20240115"
-```
-
----
-
-### Action: Get Adjustment Factors
-
-- `GET /api/v2/cnstock/adj-factor`
-
-**Query Parameters:**
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `tsCode` | string | No | Stock code |
-| `tradeDate` | string | No | Trade date YYYYMMDD |
-| `startDate` | string | No | Start date YYYYMMDD |
-| `endDate` | string | No | End date YYYYMMDD |
-| `limit` | int | No | Max 1-5000 (default: 100) |
-
-**Request:**
-```bash
-curl -sS "${AUTH[@]}" "$BASE/api/v2/cnstock/adj-factor?tsCode=000001.SZ&limit=100"
-```
-
----
-
-### Action: Get Name Change History
-
-- `GET /api/v2/cnstock/name-change`
-
-**Query Parameters:**
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `tsCode` | string | No | Stock code |
-| `startDate` | string | No | Start date YYYYMMDD |
-| `endDate` | string | No | End date YYYYMMDD |
-| `limit` | int | No | Max 1-5000 (default: 100) |
-
-**Request:**
-```bash
-curl -sS "${AUTH[@]}" "$BASE/api/v2/cnstock/name-change?tsCode=000001.SZ"
-```
-
----
-
-### Action: Get IPO New Shares
-
-- `GET /api/v2/cnstock/new-share`
-
-**Query Parameters:**
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `startDate` | string | No | Start date YYYYMMDD |
-| `endDate` | string | No | End date YYYYMMDD |
-| `limit` | int | No | Max 1-5000 (default: 100) |
-
-**Request:**
-```bash
+# 无代码类
+curl -sS "${AUTH[@]}" "$BASE/api/v2/cnstock/symbols?listStatus=L"
 curl -sS "${AUTH[@]}" "$BASE/api/v2/cnstock/new-share?startDate=20240101&endDate=20240630"
-```
-
----
-
-### Action: Get Daily Price Limits
-
-- `GET /api/v2/cnstock/stk-limit`
-
-**Query Parameters:**
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `tsCode` | string | No | Stock code |
-| `tradeDate` | string | No | Trade date YYYYMMDD |
-| `startDate` | string | No | Start date YYYYMMDD |
-| `endDate` | string | No | End date YYYYMMDD |
-| `limit` | int | No | Max 1-5000 (default: 100) |
-
-**Request:**
-```bash
-curl -sS "${AUTH[@]}" "$BASE/api/v2/cnstock/stk-limit?tradeDate=20240115"
-```
-
----
-
-### Action: Get Suspend/Resume Info
-
-- `GET /api/v2/cnstock/suspend`
-
-**Query Parameters:**
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `tsCode` | string | No | Stock code |
-| `tradeDate` | string | No | Trade date YYYYMMDD |
-| `suspendDate` | string | No | Suspension date YYYYMMDD |
-| `resumeDate` | string | No | Resume date YYYYMMDD |
-| `limit` | int | No | Max 1-5000 (default: 100) |
-
-**Request:**
-```bash
-curl -sS "${AUTH[@]}" "$BASE/api/v2/cnstock/suspend?tsCode=000001.SZ"
-```
-
----
-
-### Action: Get A股 Trade Calendar
-
-- `GET /api/v2/cnstock/trade-cal`
-
-**Query Parameters:**
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `exchange` | string | No | `SSE` or `SZSE` |
-| `startDate` | string | No | Start date YYYYMMDD |
-| `endDate` | string | No | End date YYYYMMDD |
-| `limit` | int | No | Max 1-10000 (default: 1000) |
-
-**Request:**
-```bash
 curl -sS "${AUTH[@]}" "$BASE/api/v2/cnstock/trade-cal?exchange=SSE&startDate=20240101&endDate=20240331"
 ```
 
 ---
 
-## Part 2: A股 Index (指数数据)
+## 指数数据
 
-### Action: Get Index Basic Info
+| Endpoint | 代码参数 | 额外参数 | 说明 |
+|----------|----------|----------|------|
+| `/api/v2/cnstock/index/basic` | — | `market`: SSE/SZSE | 指数列表 |
+| `/api/v2/cnstock/index/daily` | `tsCode` (必填) | startDate, endDate, limit | 日线 |
+| `/api/v2/cnstock/index/weekly` | `tsCode` (必填) | 同上 | 周线 |
+| `/api/v2/cnstock/index/monthly` | `tsCode` (必填) | 同上 | 月线 |
+| `/api/v2/cnstock/index/daily-basic` | `tsCode` | tradeDate, startDate, endDate, limit | 指数每日指标 |
+| `/api/v2/cnstock/index/weight` | `indexCode` | tradeDate, startDate, endDate, limit | 成分股权重 |
+| `/api/v2/cnstock/index/classify` | — | `src`, `version`, limit | 申万行业分类 |
 
-- `GET /api/v2/cnstock/index/basic`
-
-**Query Parameters:**
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `market` | string | No | Market: `SSE` (Shanghai), `SZSE` (Shenzhen) |
-
-**Request:**
 ```bash
 curl -sS "${AUTH[@]}" "$BASE/api/v2/cnstock/index/basic?market=SSE"
-```
-
----
-
-### Action: Get Index Daily Data
-
-- `GET /api/v2/cnstock/index/daily`
-
-**Query Parameters:**
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `tsCode` | string | **Yes** | Index code (e.g., `000001.SH`) |
-| `startDate` | string | No | Start date YYYYMMDD |
-| `endDate` | string | No | End date YYYYMMDD |
-| `limit` | int | No | Max 1-5000 (default: 100) |
-
-**Request:**
-```bash
 curl -sS "${AUTH[@]}" "$BASE/api/v2/cnstock/index/daily?tsCode=000001.SH&limit=100"
-```
-
----
-
-### Action: Get Index Weekly Data
-
-- `GET /api/v2/cnstock/index/weekly`
-
-**Query Parameters:** Same as index daily.
-
-**Request:**
-```bash
-curl -sS "${AUTH[@]}" "$BASE/api/v2/cnstock/index/weekly?tsCode=000001.SH&limit=100"
-```
-
----
-
-### Action: Get Index Monthly Data
-
-- `GET /api/v2/cnstock/index/monthly`
-
-**Query Parameters:** Same as index daily.
-
-**Request:**
-```bash
-curl -sS "${AUTH[@]}" "$BASE/api/v2/cnstock/index/monthly?tsCode=000001.SH&limit=100"
-```
-
----
-
-### Action: Get Index Daily Basic
-
-- `GET /api/v2/cnstock/index/daily-basic`
-
-**Query Parameters:**
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `tsCode` | string | No | Index code |
-| `tradeDate` | string | No | Trade date YYYYMMDD |
-| `startDate` | string | No | Start date YYYYMMDD |
-| `endDate` | string | No | End date YYYYMMDD |
-| `limit` | int | No | Max 1-5000 (default: 100) |
-
-**Request:**
-```bash
-curl -sS "${AUTH[@]}" "$BASE/api/v2/cnstock/index/daily-basic?tsCode=000001.SH&limit=100"
-```
-
----
-
-### Action: Get Index Component Weights
-
-- `GET /api/v2/cnstock/index/weight`
-
-**Query Parameters:**
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `indexCode` | string | No | Index code (e.g., `000001.SH`) |
-| `tradeDate` | string | No | Trade date YYYYMMDD |
-| `startDate` | string | No | Start date YYYYMMDD |
-| `endDate` | string | No | End date YYYYMMDD |
-| `limit` | int | No | Max 1-5000 (default: 100) |
-
-**Request:**
-```bash
 curl -sS "${AUTH[@]}" "$BASE/api/v2/cnstock/index/weight?indexCode=000001.SH&limit=100"
-```
-
----
-
-### Action: Get Industry Classification
-
-- `GET /api/v2/cnstock/index/classify`
-
-Shenwan (申万) industry classification.
-
-**Query Parameters:**
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `src` | string | No | Source type |
-| `version` | string | No | Version |
-| `limit` | int | No | Max 1-5000 (default: 100) |
-
-**Request:**
-```bash
 curl -sS "${AUTH[@]}" "$BASE/api/v2/cnstock/index/classify"
 ```

@@ -1,118 +1,54 @@
 # 港股 API Reference
 
-## Action: Get HK Stock List
+> 代码格式规则、日期格式、调用模板见 `SKILL.md` Critical Rules 部分。本文档仅补充各端点的详细参数。
 
-- `GET /api/v2/hkstock/symbols`
+## 港股实时行情
 
-**Query Parameters:**
+### Get HK Securities Quote
+`GET /api/v2/hkstock/securities`
+
+批量查询港股实时报价，单次最多 500 个代码。**代码格式：纯数字，不带 `.HK` 后缀。**
+
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
-| `listStatus` | string | No | `L` (listed, default), `D` (delisted) |
+| `codes` | string | **Yes** | 股票代码，逗号分隔（如 `00700,09988,09888`） |
+| `fields` | string | No | 返回字段，逗号分隔 |
 
-**Request:**
 ```bash
-curl -sS "${AUTH[@]}" "$BASE/api/v2/hkstock/symbols"
+curl -sS "${AUTH[@]}" "$BASE/api/v2/hkstock/securities?codes=00700,09988,09888"
+curl -sS "${AUTH[@]}" "$BASE/api/v2/hkstock/securities?codes=00700&fields=price,chgPct,volume"
 ```
+
+```json
+{"success": true, "data": {"00700": {"name": "腾讯控股", "price": 375.20, "chgPct": -0.53, "volume": 12000000}}, "timestamp": 1710865200000}
+```
+
+### ⚠️ Known Issue: `limit` 参数不返回最新数据
+
+`/api/v2/hkstock/stocks` 的 `limit` 可能不包含最新交易日。**改用 `startDate` + `endDate`。**
 
 ---
 
-## Action: Get HK Stock Daily Data
+## 港股 Endpoints
 
-- `GET /api/v2/hkstock/daily`
+> **通用参数**：`tsCode`(带后缀), `tradeDate`, `startDate`, `endDate`, `limit`(1-5000, 默认100)。
+> 代码格式规则见 SKILL.md Critical Rules 1。
 
-**Query Parameters:**
-| Parameter | Type | Required | Description | Example |
-|-----------|------|----------|-------------|---------|
-| `symbol` | string | **Yes** | HK stock code | `00700.HK` |
-| `startDate` | string | No | Start date YYYYMMDD | `20240101` |
-| `endDate` | string | No | End date YYYYMMDD | `20240131` |
-| `limit` | int | No | Max 1-5000 (default: 100) | `500` |
+| Endpoint | 代码参数 | 额外参数 | 说明 |
+|----------|----------|----------|------|
+| `/api/v2/hkstock/symbols` | — | `listStatus`: L/D | 股票列表 |
+| `/api/v2/hkstock/stocks` | `symbol` (必填) | startDate, endDate, limit | K线 (⚠️ limit bug，用日期) |
+| `/api/v2/hkstock/trade-cal` | — | startDate, endDate, limit | 交易日历 |
+| `/api/v2/hkstock/ggt-top10` | `tsCode` | tradeDate, startDate, endDate, limit | 港股通 Top10 |
+| `/api/v2/hkstock/ggt-daily` | `tsCode` | tradeDate, startDate, endDate, limit | 港股通每日成交 |
+| `/api/v2/hkstock/hold` | `tsCode` | tradeDate, startDate, endDate, limit | 港股通持仓 |
 
-**Request:**
 ```bash
-curl -sS "${AUTH[@]}" \
-  "$BASE/api/v2/hkstock/daily?symbol=00700.HK&startDate=20240101&endDate=20240131&limit=500"
-```
+# K线 (⚠️ 用 startDate+endDate，不用 limit)
+curl -sS "${AUTH[@]}" "$BASE/api/v2/hkstock/stocks?symbol=00700.HK&startDate=20260301&endDate=20260405"
 
----
-
-## Action: Get HK Trade Calendar
-
-- `GET /api/v2/hkstock/trade-cal`
-
-**Query Parameters:**
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `startDate` | string | No | Start date YYYYMMDD |
-| `endDate` | string | No | End date YYYYMMDD |
-| `limit` | int | No | Max 1-10000 (default: 1000) |
-
-**Request:**
-```bash
-curl -sS "${AUTH[@]}" "$BASE/api/v2/hkstock/trade-cal?startDate=20240101&endDate=20240630"
-```
-
----
-
-## Action: Get HK Connect Top 10
-
-- `GET /api/v2/hkstock/ggt-top10`
-
-Stock Connect top 10 active stocks.
-
-**Query Parameters:**
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `tradeDate` | string | No | Trade date YYYYMMDD |
-| `tsCode` | string | No | Stock code |
-| `startDate` | string | No | Start date YYYYMMDD |
-| `endDate` | string | No | End date YYYYMMDD |
-| `limit` | int | No | Max 1-5000 (default: 100) |
-
-**Request:**
-```bash
+# 港股通
 curl -sS "${AUTH[@]}" "$BASE/api/v2/hkstock/ggt-top10?tradeDate=20240115"
-```
-
----
-
-## Action: Get HK Connect Daily Trading
-
-- `GET /api/v2/hkstock/ggt-daily`
-
-Stock Connect daily trading summary.
-
-**Query Parameters:**
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `tradeDate` | string | No | Trade date YYYYMMDD |
-| `startDate` | string | No | Start date YYYYMMDD |
-| `endDate` | string | No | End date YYYYMMDD |
-| `limit` | int | No | Max 1-5000 (default: 100) |
-
-**Request:**
-```bash
 curl -sS "${AUTH[@]}" "$BASE/api/v2/hkstock/ggt-daily?startDate=20240101&endDate=20240131"
-```
-
----
-
-## Action: Get HK Connect Holdings
-
-- `GET /api/v2/hkstock/hold`
-
-Stock Connect holdings details.
-
-**Query Parameters:**
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `tsCode` | string | No | Stock code |
-| `tradeDate` | string | No | Trade date YYYYMMDD |
-| `startDate` | string | No | Start date YYYYMMDD |
-| `endDate` | string | No | End date YYYYMMDD |
-| `limit` | int | No | Max 1-5000 (default: 100) |
-
-**Request:**
-```bash
 curl -sS "${AUTH[@]}" "$BASE/api/v2/hkstock/hold?tsCode=600519.SH"
 ```
