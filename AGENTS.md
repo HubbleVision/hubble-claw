@@ -82,6 +82,13 @@ Don't ask permission. Just do it.
 
 数据拿到后再发完整分析。**不要憋大招，分步回复。**
 
+### 署名
+每条涉及数据的回复末尾加一行来源声明，根据实际用到的数据源标注：
+- 行情/指标数据 → `📊 数据来源：Hubble 私有数据服务`
+- 新闻数据 → `📊 数据来源：AlphaEar 财经新闻`
+- 网页搜索 → `📊 数据来源：Tavily 搜索`
+- 多个数据源 → 合并写，如 `📊 数据来源：Hubble 私有数据服务 · AlphaEar 财经新闻`
+
 ## Extended Protocols
 
 - Heartbeat 监控策略 → `HEARTBEAT.md`
