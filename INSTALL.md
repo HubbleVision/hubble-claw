@@ -29,10 +29,6 @@ Set the following environment variables before use:
 export MARKET_API_BASE_URL="http://localhost:8080"
 export MARKET_API_KEY="your-market-api-key"
 
-# Hubble PM Agent (必需)
-export HUBBLE_API_BASE_URL="https://market-v2.bedev.hubble-rpc.xyz"
-export HUBBLE_API_KEY="hb_sk_your-key-here"
-
 # Tavily 深度搜索 (必需)
 export TAVILY_API_KEY="tvly-your-key-here"
 ```
@@ -53,43 +49,37 @@ export TAVILY_API_KEY="tvly-your-key-here"
 
 ---
 
-### 3. Hubble PM Agent — PM-Agent 管理
-- Source: https://github.com/HubbleVision/hubble-skills/tree/main/openclaw/skills/hubble_pm_agent
-- Env: `HUBBLE_API_BASE_URL`, `HUBBLE_API_KEY`
-
----
-
-### 4. AlphaEar News — 财经新闻聚合
+### 3. AlphaEar News — 财经新闻聚合
 - Source: https://github.com/RKiding/Awesome-finance-skills/tree/main/skills/alphaear-news
 
 ---
 
-### 5. AlphaEar Reporter — 研报生成
+### 4. AlphaEar Reporter — 研报生成
 - Source: https://github.com/RKiding/Awesome-finance-skills/tree/main/skills/alphaear-reporter
 
 ---
 
-### 6. Stock Liquidity — 股票流动性分析
+### 5. Stock Liquidity — 股票流动性分析
 - Source: https://github.com/himself65/finance-skills/tree/main/skills/stock-liquidity
 
 ---
 
-### 7. Estimate Analysis — 分析师预期分析
+### 6. Estimate Analysis — 分析师预期分析
 - Source: https://github.com/himself65/finance-skills/tree/main/skills/estimate-analysis
 
 ---
 
-### 8. Earnings Recap — 财报回顾
+### 7. Earnings Recap — 财报回顾
 - Source: https://github.com/himself65/finance-skills/tree/main/skills/earnings-recap
 
 ---
 
-### 9. Skill Vetter — 技能安全审计
+### 8. Skill Vetter — 技能安全审计
 - Source: https://github.com/openclaw/skills/blob/main/skills/spclaudehome/skill-vetter
 
 ---
 
-### 10. Tavily — 深度网页搜索
+### 9. Tavily — 深度网页搜索
 
 **方式一：自动配置**
 
@@ -133,7 +123,7 @@ openclaw configure --section web
 
 ---
 
-### 11. WeChat Article Extractor — 微信公众号文章读取
+### 10. WeChat Article Extractor — 微信公众号文章读取
 
 - Source: https://github.com/openclaw/skills/tree/main/skills/chunhualiao/wechat-article-extractor
 

@@ -29,7 +29,6 @@
 
 - skill-router — https://github.com/HubbleVision/hubble-claw/blob/main/skills/skill-router
 - market-stock (v2.3.0) — https://github.com/HubbleVision/hubble-claw/blob/main/skills/market-stock
-- hubble-pm-agent — https://github.com/HubbleVision/hubble-skills/tree/main/openclaw/skills/hubble_pm_agent
 - alphaear-news — https://github.com/RKiding/Awesome-finance-skills/tree/main/skills/alphaear-news
 - alphaear-reporter — https://github.com/RKiding/Awesome-finance-skills/tree/main/skills/alphaear-reporter
 - stock-liquidity — https://github.com/himself65/finance-skills/tree/main/skills/stock-liquidity
@@ -41,8 +40,6 @@
 环境变量（确认已设置）：
 - MARKET_API_BASE_URL=http://localhost:8080
 - MARKET_API_KEY=<your-key>
-- HUBBLE_API_BASE_URL=https://market-v2.bedev.hubble-rpc.xyz
-- HUBBLE_API_KEY=<your-key>
 - TAVILY_API_KEY=<your-key>
 
 逐个文件拉取并写入，逐个 skill 安装，完成后汇报结果。
