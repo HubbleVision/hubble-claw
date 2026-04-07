@@ -43,7 +43,7 @@ export TAVILY_API_KEY="tvly-your-key-here"
 ---
 
 ### 2. Market Stock — 股票数据和指标
-需升级到最新版 v2.3.0
+需升级到最新版 v2.4.0
 - Source: https://github.com/HubbleVision/hubble-claw/blob/main/skills/market-stock
 - Env: `MARKET_API_BASE_URL`, `MARKET_API_KEY`
 

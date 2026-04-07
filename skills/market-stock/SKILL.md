@@ -11,7 +11,7 @@ description: >
 
 # Market Stock Skill
 
-Version: v2.3.0
+Version: v2.4.0
 
 > A股/港股/美股行情数据、27种技术指标、结构化金融研报生成。
 

@@ -9,7 +9,7 @@ description: >
 
 # Skill Router
 
-Version: v1.0.0
+Version: v1.1.0
 
 > 所有 skill 的索引与编排中心。解析用户意图，确定调用哪些 skill、以什么顺序执行。
 
