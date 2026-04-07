@@ -45,24 +45,23 @@
 
 ---
 
-## 批量接口（推荐）
+## 批量接口（仅 Crypto）
 
-`POST /api/v2/indicators` — 一次请求计算多个指标，禁止逐个调用单独端点。
+`POST /api/v2/indicators` — 仅支持 crypto，**不支持股票**（股票传 `exchange` 会报 "unknown exchange"）。
+
+⚠️ **股票多指标请用 GET 单指标并行调用**（见下方"单指标接口模板"）。
 
 ```bash
-curl -sS "${AUTH[@]}" -X POST "$BASE/api/v2/indicators" -d '{
-  "market": "cn",
-  "symbol": "000001.SZ",
-  "interval": "1d",
-  "limit": 100,
-  "indicators": [
-    {"type": "rsi", "params": [14]},
-    {"type": "macd", "params": [12, 26, 9]},
-    {"type": "boll", "params": [20, 2.0]},
-    {"type": "kdj", "params": [9, 3, 3]},
-    {"type": "sma", "params": [20]}
-  ]
-}'
+# ❌ 股票不能用 POST batch — 会报 422（要求 exchange）或 500（unknown exchange）
+curl -X POST "$BASE/api/v2/indicators" -d '{"market":"cn","symbol":"000001.SZ",...}'
+
+# ✅ 股票多指标：GET 并行
+curl "$BASE/api/v2/indicators/rsi?market=cn&symbol=000001.SZ&period=14&limit=100" &
+curl "$BASE/api/v2/indicators/macd?market=cn&symbol=000001.SZ&limit=100" &
+curl "$BASE/api/v2/indicators/boll?market=cn&symbol=000001.SZ&period=20&nbdev=2.0&limit=100" &
+curl "$BASE/api/v2/indicators/kdj?market=cn&symbol=000001.SZ&limit=100" &
+curl "$BASE/api/v2/indicators/sma?market=cn&symbol=000001.SZ&period=20&limit=100" &
+wait
 ```
 
 ### Batch params 映射

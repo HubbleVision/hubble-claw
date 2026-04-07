@@ -53,7 +53,7 @@ Version: v1.0.0
 ## 路由规则（按优先级）
 
 1. **个股数据**（K线、指标、公司信息）→ `market_stock`
-2. **技术指标** → `market_stock`，优先批量接口
+2. **技术指标** → `market_stock`，GET 单指标并行调用
 3. **财经新闻** → `alphaear-news`
 4. **研报生成** → 简单个股走 `market_stock` 内置 Workflow；复杂多信号走 `alphaear-reporter`
 5. **分析师预期 / 财报** → `estimate-analysis` 或 `earnings-recap`
@@ -101,7 +101,7 @@ Version: v1.0.0
 ### 个股综合分析
 
 ```
-market_stock (K线 + 指标批量 POST)
+market_stock (K线 + 指标 GET 并行)
   ∥ earnings-recap (最近财报)
   ∥ estimate-analysis (分析师预期)
   → 综合输出
@@ -116,7 +116,7 @@ alphaear-news (新闻信号) ∥ market_stock (K线 + 指标) → alphaear-repor
 ### 多股对比
 
 ```
-market_stock (K线 × N + 指标批量 × N 并行) → stock-liquidity (可选) → estimate-analysis (可选) → 对比输出
+market_stock (K线 × N + 指标 GET × N 并行) → stock-liquidity (可选) → estimate-analysis (可选) → 对比输出
 ```
 
 ### 市场概览

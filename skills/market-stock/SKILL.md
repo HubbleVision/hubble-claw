@@ -29,20 +29,7 @@ AUTH=(-H "X-API-Key: $MARKET_API_KEY" -H "Content-Type: application/json")
 
 ---
 
-## Endpoint Blacklist — 禁止调用
-
-| ❌ 不存在的端点 | ✅ 替代方案 |
-|-----------------|------------|
-| `/api/v2/cnstock/klines` | `/api/v2/cnstock/stocks`（参数名 `symbol`） |
-| `/api/v2/cnstock/industry/daily` | 不支持行业日行情 |
-| `/api/v2/cnstock/sector` | 不支持板块查询 |
-| `/api/v2/cnstock/industry` | 不支持行业分类 |
-| `/api/v2/cnstock/summary` | `daily-basic` 获取市场概览 |
-| `/api/v2/cnstock/financial` | 不支持财报数据 |
-| `/api/v2/cnstock/report` | 内置 Report Workflow 生成研报 |
-| `/api/v2/cnstock/profile` | `/api/v2/cnstock/company` |
-| `/api/v2/cnstock/info` | `/api/v2/cnstock/company` |
-| `/api/v2/hkstock/daily` | `/api/v2/hkstock/stocks`（参数名 `symbol`） |
+## 不要自己编造接口
 
 **核心规则：只能调用下方 Quick Route 表和 references/ 中列出的端点。不确定时先查 references/，不要猜。**
 
@@ -75,10 +62,11 @@ AUTH=(-H "X-API-Key: $MARKET_API_KEY" -H "Content-Type: application/json")
 
 ### 技术指标
 
-| 用户意图 | Endpoint |
-|----------|----------|
-| 批量指标（推荐） | `POST /api/v2/indicators` |
-| 指标信息 | `GET /api/v2/indicators/info` |
+| 用户意图 | Endpoint | 备注 |
+|----------|----------|------|
+| 股票指标（推荐） | `GET /api/v2/indicators/{type}` | 多个指标并行调用，参数用 `market` |
+| Crypto 批量指标 | `POST /api/v2/indicators` | 仅 crypto，参数用 `exchange` |
+| 指标信息 | `GET /api/v2/indicators/info` | — |
 
 ---
 
@@ -110,9 +98,27 @@ curl "$BASE/api/v2/cnstock/company?tsCode=600519.SH"
 | 行情端点（stocks, daily, company...） | `YYYYMMDD` | `20240115` |
 | 指标端点（indicators） | `YYYY-MM-DD` | `2024-01-15` |
 
-### 3. 指标必需参数
+### 3. 指标参数对照 — exchange vs market vs codes
 
-`market` **必填**: `cn`(A股), `hk`(港股), `us`(美股)。多指标必须用 `POST /api/v2/indicators` 批量接口。
+三套接口使用**不同的交易所标识方式**，混用会报错（如 "unknown exchange"）：
+
+| 接口 | 交易所参数 | 代码参数 | 示例 |
+|------|-----------|---------|------|
+| **指标** `GET /api/v2/indicators/{type}` | `market=cn\|hk\|us` | `symbol=600519.SH` | `?market=cn&symbol=600519.SH` |
+| **实时行情** `GET /api/v2/cnstock/securities` | 无（通过端点路径区分） | `codes=600519` | `?codes=600519` |
+| **K线/其他** `GET /api/v2/cnstock/stocks` 等 | 无（通过端点路径区分） | `symbol` 或 `tsCode` | `?symbol=600519.SH` |
+
+**⚠️ 指标接口没有 `exchange` 参数。** 传 `exchange=SSE` / `exchange=SZSE` 等会返回 "unknown exchange" 错误。正确做法是用 `market` 参数：
+
+```bash
+# ✅ 正确：用 market
+curl "$BASE/api/v2/indicators/rsi?market=cn&symbol=600519.SH&period=14&limit=100"
+
+# ❌ 错误：指标接口没有 exchange 参数
+curl "$BASE/api/v2/indicators/rsi?exchange=SSE&symbol=600519.SH&period=14&limit=100"
+```
+
+`market` **必填**: `cn`（A股）、`hk`（港股）、`us`（美股）。
 
 ### 4. 港股 limit 已知问题
 
@@ -154,7 +160,7 @@ curl -X POST "$BASE/api/v2/indicators" -d '{"market":"hk","symbol":"00700.HK",..
 K线数据和指标数据**没有依赖关系，应该并行调用**。不要等 K 线返回后再调指标。
 
 ```
-✅ 并行：klines + POST /indicators + daily-basic 同时发出
+✅ 并行：klines + GET /indicators/{type} + daily-basic 同时发出
 ❌ 串行：先 klines → 等返回 → 再 indicators → 等返回 → 再 daily-basic
 ```
 
@@ -203,19 +209,20 @@ wait
 
 并行场景：多只股票K线、多个指数、不同股票指标、行情+新闻、同股K线+指标。
 
-### 规则 2：多指标用批量接口
+### 规则 2：多指标用 GET 并行（股票）
+
+**股票指标不支持 POST 批量接口**（POST 只支持 crypto）。多个指标用 GET 单接口并行调用：
 
 ```bash
-# ✅ 一次请求：RSI + MACD + BOLL + KDJ
-curl -sS "${AUTH[@]}" -X POST "$BASE/api/v2/indicators" -d '{
-  "market": "cn", "symbol": "000001.SZ", "interval": "1d", "limit": 100,
-  "indicators": [
-    {"type": "rsi", "params": [14]},
-    {"type": "macd", "params": [12, 26, 9]},
-    {"type": "boll", "params": [20, 2.0]},
-    {"type": "kdj", "params": [9, 3, 3]}
-  ]
-}'
+# ✅ 股票：GET 并行，多个指标同时发出
+curl "$BASE/api/v2/indicators/rsi?market=cn&symbol=000001.SZ&period=14&limit=100" &
+curl "$BASE/api/v2/indicators/macd?market=cn&symbol=000001.SZ&limit=100" &
+curl "$BASE/api/v2/indicators/boll?market=cn&symbol=000001.SZ&period=20&nbdev=2.0&limit=100" &
+curl "$BASE/api/v2/indicators/kdj?market=cn&symbol=000001.SZ&limit=100" &
+wait
+
+# ❌ 错误：股票用 POST 批量会报错（要求 exchange 参数，股票没有）
+curl -X POST "$BASE/api/v2/indicators" -d '{"market":"cn","symbol":"000001.SZ",...}'
 ```
 
 ### 规则 3：404 立即停止
@@ -226,15 +233,17 @@ curl -sS "${AUTH[@]}" -X POST "$BASE/api/v2/indicators" -d '{
 
 ## Report Generation Workflow
 
-### Step 1: Cluster Signals — 将散乱信号聚类为 3-5 个核心主题
+**原则：有数据有观点，不要废话。总字数不超过 800 字。**
 
-```json
-{"clusters": [{"theme_title": "主题", "signal_ids": [1, 3], "rationale": "理由"}]}
-```
+### Step 1: Cluster — 聚类为 2-3 个核心主题（不要超过 3 个）
 
-### Step 2: Write Sections — 对每个主题写深度分析（宏观/行业 → 传导 → 个股影响）
+### Step 2: Write — 每个主题：数据表格/图表 + 1-2 段分析（带观点）
 
-### Step 3: Final Assembly — 组装报告（H2/H3 + References + Risk Factors + Executive Summary）
+### Step 3: Assemble — 组装格式：
+- 开头一句话结论（带 🟢🔴🟡 标签）
+- 2-3 个主题段落（每段含表格或 `json-chart`）
+- 风险提示（1-2 句）
+- **没有 Executive Summary，开头结论就是 Summary**
 
 ---
 
@@ -250,6 +259,8 @@ curl -sS "${AUTH[@]}" -X POST "$BASE/api/v2/indicators" -d '{
 | 400 (指标) | 日期格式错或缺 `market` | 用 `YYYY-MM-DD`，`market` 必填 |
 | securities 返回空 | codes 带了后缀 | A股 `600519`，港股 `00700`，不要带交易所后缀 |
 | 港股无最新数据 | limit bug | 改用 `startDate` + `endDate` |
+| "unknown exchange" | 指标接口传了 `exchange` 参数 | 指标接口用 `market=cn\|hk\|us`，没有 `exchange` 参数 |
+| 指标 422 错误 | 股票用了 POST 批量接口 | POST 只支持 crypto；股票用 `GET /api/v2/indicators/{type}` 并行调用 |
 | BOLL 结果错误 | V1 习惯 `nbdev_up`/`nbdev_dn` | V2 用单个 `nbdev`（默认 2.0） |
 
 **Error Codes:** `400` 参数错误 · `401` API key 无效 · `404` 标的不存在 · `500` 内部错误
