@@ -75,6 +75,12 @@ AUTH=(-H "X-API-Key: $MARKET_API_KEY" -H "Content-Type: application/json")
 | 美股机构持仓 | `GET /api/v2/usstock/finance/institutional` | `symbol` | `AAPL` |
 | 美股财报电话会议 | `GET /api/v2/usstock/finance/transcript` | `symbol`, `quarter` | `AAPL` |
 | 美股ETF档案 | `GET /api/v2/usstock/etf-profile` | `symbol` | `SPY` |
+| 美股公司概览 | `GET /api/v2/usstock/overview` [AV] | `symbol` | `AAPL` |
+| 美股盈利数据 | `GET /api/v2/usstock/earnings` [AV] | `symbol` | `AAPL` |
+| 美股新闻舆情 | `GET /api/v2/usstock/news-sentiment` [AV] | `symbol`, `topics`, `limit` | `AAPL` |
+| 美股AI综合分析 | `GET /api/v2/usstock/analysis` [AV] | `symbol` | `AAPL` |
+| 美股AI基本面分析 | `GET /api/v2/usstock/fundamental-analysis` [AV] | `symbol` | `AAPL` |
+| 美股搜索 | `GET /api/v2/usstock/search` [AV] | `keywords` | — |
 | 指数行情 | `GET /api/v2/cnstock/index/daily` | `tsCode` | `000001.SH` |
 | 申万行业分类 | `GET /api/v2/cnstock/index/classify` | — | — |
 
@@ -195,6 +201,24 @@ curl -sS "${AUTH[@]}" "$BASE/api/v2/hkstock/daily?symbol=00700.HK&limit=30"
 ```
 
 ### 9. 不要直接爬取外部网页
+
+### 10. Alpha Vantage 频率限制 — 75 次/分钟
+
+Quick Route 中标记 **[AV]** 的端点走 Alpha Vantage 数据源，共享 75 次/分钟 配额。
+
+**消耗预算估算：**
+| 场景 | AV 调用次数 | 说明 |
+|------|------------|------|
+| 单只股票深度分析 | 5-8 次 | overview + earnings + 3大报表 + news |
+| 单只股票 AI 综合分析 | 1 次（内部编排） | `analysis` 或 `fundamental-analysis` |
+| 市场全景扫描 | 3-5 次 | market-status + top-movers + calendar |
+| 多股票对比 (3只) | 15-24 次 | 每只 5-8 次 |
+
+**规则：**
+- 单轮对话中**最多分析 2-3 只股票**，避免触发 429
+- `analysis` 和 `fundamental-analysis` 是编排接口（内部多次调用 AV），**不要并行调用**，且不要在同一轮与其他 AV 接口并行
+- 非 [AV] 端点（securities、stocks、symbols、indicators）**不受此限制**，可自由并行
+- 收到 429 → 立即停止所有 AV 调用，不要重试
 
 **DO NOT** directly fetch external websites (sina.com.cn, wallstreetcn.com, cninfo.com.cn, cls.cn, 36kr.com, etc.) — most will fail (JS rendering, anti-scraping, 404). Use the correct skill:
 

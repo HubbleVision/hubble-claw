@@ -3,6 +3,10 @@
 > 代码格式规则、日期格式、并行调用模板见 `SKILL.md` Critical Rules 部分。本文档仅补充各端点的详细参数。
 > 美股所有接口代码格式统一使用 Ticker（如 `AAPL`），无后缀。
 
+> **⚠️ Alpha Vantage 频率限制：75 次/分钟。** 以下标记 [AV] 的端点均消耗 AV 配额。
+> 单只股票深度分析可能需要 5-8 次调用，单轮对话中最多分析 2-3 只股票，避免 429 限流。
+> 收到 429 时立即停止调用，不要重试。
+
 ## 美股实时行情
 
 ### Get US Securities Quote
@@ -63,7 +67,7 @@ curl -sS "${AUTH[@]}" "$BASE/api/v2/usstock/trade-cal?startDate=20240101&endDate
 
 ## 美股市场信息
 
-> 数据源：Alpha Vantage
+> 数据源：Alpha Vantage [AV]
 
 | Endpoint | 代码参数 | 额外参数 | 说明 |
 |----------|----------|----------|------|
@@ -94,7 +98,7 @@ curl -sS "${AUTH[@]}" "$BASE/api/v2/usstock/market-overview"
 
 ## 美股财务数据
 
-> 数据源：Alpha Vantage。参数统一用 `symbol`。
+> 数据源：Alpha Vantage [AV]。参数统一用 `symbol`。
 
 | Endpoint | 额外参数 | 说明 |
 |----------|----------|------|
@@ -130,4 +134,69 @@ curl -sS "${AUTH[@]}" "$BASE/api/v2/usstock/finance/transcript?symbol=AAPL&quart
 
 # ETF 档案
 curl -sS "${AUTH[@]}" "$BASE/api/v2/usstock/etf-profile?symbol=SPY"
+```
+
+---
+
+## 美股公司概览与盈利
+
+> 数据源：Alpha Vantage [AV]
+
+| Endpoint | 额外参数 | 说明 |
+|----------|----------|------|
+| `/api/v2/usstock/overview` | — | 公司概览（PE/PB/EPS/市值/52周高低/股息率/行业等） |
+| `/api/v2/usstock/earnings` | — | 盈利数据（季度 EPS 实际 vs 预期） |
+
+```bash
+curl -sS "${AUTH[@]}" "$BASE/api/v2/usstock/overview?symbol=AAPL"
+curl -sS "${AUTH[@]}" "$BASE/api/v2/usstock/earnings?symbol=AAPL"
+```
+
+---
+
+## 美股新闻舆情
+
+> 数据源：Alpha Vantage [AV]
+
+| Endpoint | 额外参数 | 说明 |
+|----------|----------|------|
+| `/api/v2/usstock/news-sentiment` | `topics`, `limit`(1-200, 默认50) | 新闻舆情分析（看涨/看跌比例、热点主题） |
+
+`topics` 可选值：`technology` · `ip` · `mergers_and_acquisitions` · `financial_markets` · `economy_fiscal` · `energy_transportation` · `finance` · `life_sciences` · `manufacturing` · `retail_wholesale`
+
+```bash
+curl -sS "${AUTH[@]}" "$BASE/api/v2/usstock/news-sentiment?symbol=AAPL&limit=20"
+curl -sS "${AUTH[@]}" "$BASE/api/v2/usstock/news-sentiment?symbol=AAPL&topics=technology&limit=50"
+```
+
+---
+
+## 美股 AI 分析 [AV]
+
+> ⚠️ 以下两个接口为编排接口，内部会多次调用 AV，耗时约 120 秒，且消耗较多 AV 配额。不要并行调用。
+
+| Endpoint | 说明 |
+|----------|------|
+| `/api/v2/usstock/analysis` | AI 综合分析（行情+K线+概览+RSI+MACD+盈利） |
+| `/api/v2/usstock/fundamental-analysis` | AI 基本面分析（概览+三大报表+盈利+预估） |
+
+```bash
+# ⚠️ 耗时约120s，不要与其他 AV 接口并行
+curl -sS "${AUTH[@]}" "$BASE/api/v2/usstock/analysis?symbol=AAPL"
+curl -sS "${AUTH[@]}" "$BASE/api/v2/usstock/fundamental-analysis?symbol=AAPL"
+```
+
+---
+
+## 美股搜索
+
+> 数据源：Alpha Vantage [AV]
+
+| Endpoint | 额外参数 | 说明 |
+|----------|----------|------|
+| `/api/v2/usstock/search` | `keywords`(必填) | 搜索美股/ETF 代码和名称 |
+
+```bash
+curl -sS "${AUTH[@]}" "$BASE/api/v2/usstock/search?keywords=Apple"
+curl -sS "${AUTH[@]}" "$BASE/api/v2/usstock/search?keywords=TSLA"
 ```
