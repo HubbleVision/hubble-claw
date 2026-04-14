@@ -28,7 +28,7 @@
 参考 INSTALL.md 文档安装以下 skill（已安装则更新到最新版）：
 
 - skill-router — https://github.com/HubbleVision/hubble-claw/blob/main/skills/skill-router
-- market-stock (v2.4.0) — https://github.com/HubbleVision/hubble-claw/blob/main/skills/market-stock
+- market-stock (v2.5.0) — https://github.com/HubbleVision/hubble-claw/blob/main/skills/market-stock
 - alphaear-news — https://github.com/RKiding/Awesome-finance-skills/tree/main/skills/alphaear-news
 - alphaear-reporter — https://github.com/RKiding/Awesome-finance-skills/tree/main/skills/alphaear-reporter
 - stock-liquidity — https://github.com/himself65/finance-skills/tree/main/skills/stock-liquidity
@@ -71,17 +71,17 @@ hubble-claw/
 │   └── hubble.sh          # 批量并行 API 查询工具
 └── skills/
     ├── skill-router/      # Skill 编排中心 (v1.1.0)
-    └── market-stock/      # 股票数据和指标 (v2.4.0)
+    └── market-stock/      # 股票数据和指标 (v2.5.0)
 ```
 
 ---
 
-## 本次更新说明（v2.4.0）
+## 本次更新说明（v2.5.0）
 
 需要更新以下 3 个文件：
 
 | 文件 | 版本 | 更新内容 |
 |------|------|----------|
 | `AGENTS.md` | — | Output Style 重写：禁止长篇大论和官腔，强制表格 + `json-chart` 图表 + 观点标签，新增"先说再做"分步响应机制 |
-| `skills/market-stock/SKILL.md` | v2.3.0 → v2.4.0 | Report Workflow 精简（主题 ≤3、总字数 ≤800）；修复 POST batch 文档错误（仅 crypto）；新增 exchange vs market 参数对照表；Error 表新增 "unknown exchange" 和 422 条目 |
+| `skills/market-stock/SKILL.md` | v2.4.0 → v2.5.0 | 新增美股市场信息与财务数据 API；补充公司概览/盈利/新闻舆情/AI 分析/搜索端点；新增 Alpha Vantage 75 次/分钟频率限制规则 |
 | `skills/skill-router/SKILL.md` | v1.0.0 → v1.1.0 | 路由规则：技术指标改为 GET 并行；Workflow 示例去掉 POST batch 引用 |
