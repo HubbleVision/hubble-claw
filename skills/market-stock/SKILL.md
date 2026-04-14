@@ -6,6 +6,8 @@ description: >
   PE/PB/换手率等每日指标、涨跌停、停复牌、复权因子、新股IPO、交易日历、
   港股通/北向资金、上证/深证指数、申万行业分类、
   MA/EMA/RSI/MACD/KDJ/布林带/ADX/ATR/CCI/VWAP 等27种技术指标、
+  美股财务报表（利润表/资产负债表/现金流量表）、股息/拆股/盈利预估、
+  内部人士交易、机构持仓、财报电话会议、ETF档案、市场涨跌排行、盈利日历、
   金融研报生成、个股深度分析、投资分析报告。
 ---
 
@@ -57,6 +59,22 @@ AUTH=(-H "X-API-Key: $MARKET_API_KEY" -H "Content-Type: application/json")
 | 港股通持仓 | `GET /api/v2/hkstock/hold` | `tsCode` | `600519.SH` |
 | 美股实时行情 | `GET /api/v2/usstock/securities` | `codes` | `AAPL` |
 | 美股K线 | `GET /api/v2/usstock/stocks` | `symbol` | `AAPL` |
+| 美股市场状态 | `GET /api/v2/usstock/market-status` | — | — |
+| 美股涨跌排行 | `GET /api/v2/usstock/top-movers` | — | — |
+| 美股盈利日历 | `GET /api/v2/usstock/calendar/earnings` | `symbol`, `horizon` | `AAPL` |
+| 美股IPO日历 | `GET /api/v2/usstock/calendar/ipo` | — | — |
+| 美股市场概览 | `GET /api/v2/usstock/market-overview` | — | — |
+| 美股利润表 | `GET /api/v2/usstock/finance/income` | `symbol` | `AAPL` |
+| 美股资产负债表 | `GET /api/v2/usstock/finance/balancesheet` | `symbol` | `AAPL` |
+| 美股现金流量表 | `GET /api/v2/usstock/finance/cashflow` | `symbol` | `AAPL` |
+| 美股股息历史 | `GET /api/v2/usstock/finance/dividend` | `symbol` | `AAPL` |
+| 美股盈利预估 | `GET /api/v2/usstock/finance/forecast` | `symbol` | `AAPL` |
+| 美股拆股历史 | `GET /api/v2/usstock/finance/splits` | `symbol` | `AAPL` |
+| 美股流通股 | `GET /api/v2/usstock/finance/shares` | `symbol` | `AAPL` |
+| 美股内部人士交易 | `GET /api/v2/usstock/finance/insider` | `symbol` | `AAPL` |
+| 美股机构持仓 | `GET /api/v2/usstock/finance/institutional` | `symbol` | `AAPL` |
+| 美股财报电话会议 | `GET /api/v2/usstock/finance/transcript` | `symbol`, `quarter` | `AAPL` |
+| 美股ETF档案 | `GET /api/v2/usstock/etf-profile` | `symbol` | `SPY` |
 | 指数行情 | `GET /api/v2/cnstock/index/daily` | `tsCode` | `000001.SH` |
 | 申万行业分类 | `GET /api/v2/cnstock/index/classify` | — | — |
 
@@ -271,7 +289,7 @@ curl -X POST "$BASE/api/v2/indicators" -d '{"market":"cn","symbol":"000001.SZ",.
 
 - `references/CNSTOCK-API.md` — A股行情 + 指数
 - `references/HKSTOCK-API.md` — 港股行情 + 港股通
-- `references/USSTOCK-API.md` — 美股行情
+- `references/USSTOCK-API.md` — 美股行情 + 市场信息 + 财务数据
 - `references/INDICATORS-API.md` — 27种技术指标详参
 
 > 参数不确定时：`grep -r "关键词" references/`
